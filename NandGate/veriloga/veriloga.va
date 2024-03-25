@@ -1,33 +1,32 @@
-// VerilogA for Verilog_models_adc, NandGate, veriloga
+// Simple logic gates
+//
+// Version 1a, 24 November 2006
+//
+// Ken Kundert
+//
+// Downloaded from The Designer's Guide (www.designers-guide.org).
+// Post any questions to www.designers-guide.org/Forum
 
-`include "constants.vams"
 `include "disciplines.vams"
 
-// 2 input nand gate
+//
+// 2-input Nand gate
+//
 
-module nand_gate (
-    input  logic A, B, // Input signals
-    output logic Y     // Output signal
-);
+module anand (out, in1, in2);
 
-    parameter real delay = 1ns; // Delay parameter
+output out; voltage out;
+input in1, in2; voltage in1, in2;
+parameter real vh = 1;			// output voltage in high state
+parameter real vl = 0;			// output voltage in low state
+parameter real vth = (vh + vl)/2;	// threshold voltage at inputs
+parameter real td = 0 from [0:inf);	// delay to start of output transition
+parameter real tt = 0 from [0:inf);	// transition time of output signals
 
-    analog begin
-        real time_delay; // Variable to hold the delay
+analog begin
+    @(cross(V(in1) - vth) or cross(V(in2) - vth))
+	;
 
-        // Compute the output Y
-        Y <= -1.0; // Initialize Y to -1
-        if (A > -VDD && B > -VDD) begin
-            Y <= 1.0; // Y = 1 if both inputs are -1
-        end
-
-        // Propagate output with specified delay
-        time_delay = delay;
-        @ (cross(-VDD/2,Y)) // Wait for output to change to -VDD/2
-            time_delay = delay; // Capture delay for next transition
-        @ (Y == 1.0) // Wait for output to change back to 1
-            time_delay = delay; // Capture delay for next transition
-        @(time_delay); // Wait for specified delay
-    end
-
+    V(out) <+ transition( !((V(in1) > vth) && (V(in2) > vth)) ? vh : vl, td, tt );
+end
 endmodule
