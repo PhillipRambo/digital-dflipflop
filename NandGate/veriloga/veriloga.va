@@ -1,0 +1,9 @@
+// VerilogA for Verilog_models_adc, NandGate, veriloga
+
+`include "constants.vams"
+`include "disciplines.vams"
+
+module NandGate;
+
+
+endmodule
