@@ -1,9 +1,47 @@
-// VerilogA for Verilog_models_adc, Digital_Dflipflop_reset, veriloga
+// D-flip flop with clear or reset
+//
 
-`include "constants.vams"
-`include "disciplines.vams"
+module dff2 (q, qb, clk, d, s, r);
 
-module Digital_Dflipflop_reset;
+output q; voltage q;	// Q output
+output qb; voltage qb;	// Q bar output
+input clk; voltage clk;	// Clock input (edge triggered)
+input d; voltage d;	// D input
+input s; voltage s;	// Set input (immediately forces Q output high) (active high)
+input r; voltage r;	// Reset input (immediately forces Q output low) (active high)
+parameter real td = 0 from [0:inf);	// delay from clock to q
+parameter real tt = 0 from [0:inf);	// transition time of output signals
+parameter real vh = 1;			// output voltage in high state
+parameter real vl = -1;			// output voltage in low state
+parameter real vth = (vh + vl)/2;	// threshold voltage at inputs
+parameter integer dir = +1 from [-1:+1] exclude 0;
+			// if dir=+1, rising clock edge triggers flip flop 
+			// if dir=-1, falling clock edge triggers flip flop 
+real out, outb;
 
-
+analog begin
+    @(initial_step) begin
+	out = vl;
+	outb = vh;
+    end
+    @(cross(V(clk) - vth, dir)) begin
+	if (V(d) > vth) begin
+	    out = vh;
+	    outb = vl;
+	end else begin
+	    out = vl;
+	    outb = vh;
+	end
+    end
+    if (V(s) > vth) begin
+	out = vh;
+	outb = vl;
+    end
+    if (V(r) > vth) begin
+	out = vl;
+	outb = vh;
+    end
+    V(q) <+ transition( out, td, tt );
+    V(qb) <+ transition( outb, td, tt );
+end
 endmodule
