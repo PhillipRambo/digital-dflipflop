@@ -1,0 +1,9 @@
+// VerilogA for Verilog_models_adc, Digital_Dflipflop_reset, veriloga
+
+`include "constants.vams"
+`include "disciplines.vams"
+
+module Digital_Dflipflop_reset;
+
+
+endmodule
