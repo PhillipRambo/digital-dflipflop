@@ -37,4 +37,3 @@ analog begin
     V(qb) <+ transition( state ? vl : vh, td, tt );
 end
 endmodule
-lol
