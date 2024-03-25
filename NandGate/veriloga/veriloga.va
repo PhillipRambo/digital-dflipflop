@@ -3,7 +3,22 @@
 `include "constants.vams"
 `include "disciplines.vams"
 
-module NandGate;
+// 2 input nand gate
 
+module NandGate (a, b, y);
+    output y; voltage y;  // Output y
+    input b; voltage b;   // Input b
+    input a; voltage a;   // Input a
 
+    parameter real td = 0 from [0:inf);   // Delay time
+    parameter real tt = 0 from [0:inf);   // Transition time
+    parameter real vh = 1;                // High voltage
+    parameter real vl = -1;               // Low voltage
+    parameter real vth = (vh + vl) / 2;   // Threshold voltage
+real state;
+
+    // Logic for NAND gate
+    analog begin
+        force y = (a < vth) || (b < vth) ? vh : vl; // y = (a NAND b)
+    end
 endmodule
