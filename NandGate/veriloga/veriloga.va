@@ -5,20 +5,29 @@
 
 // 2 input nand gate
 
-module NandGate (a, b, y);
-    output y; voltage y;  // Output y
-    input b; voltage b;   // Input b
-    input a; voltage a;   // Input a
+module nand_gate (
+    input  logic A, B, // Input signals
+    output logic Y     // Output signal
+);
 
-    parameter real td = 0 from [0:inf);   // Delay time
-    parameter real tt = 0 from [0:inf);   // Transition time
-    parameter real vh = 1;                // High voltage
-    parameter real vl = -1;               // Low voltage
-    parameter real vth = (vh + vl) / 2;   // Threshold voltage
-real state;
+    parameter real delay = 1ns; // Delay parameter
 
-    // Logic for NAND gate
     analog begin
-        force y = (a < vth) || (b < vth) ? vh : vl; // y = (a NAND b)
+        real time_delay; // Variable to hold the delay
+
+        // Compute the output Y
+        Y <= -1.0; // Initialize Y to -1
+        if (A > -VDD && B > -VDD) begin
+            Y <= 1.0; // Y = 1 if both inputs are -1
+        end
+
+        // Propagate output with specified delay
+        time_delay = delay;
+        @ (cross(-VDD/2,Y)) // Wait for output to change to -VDD/2
+            time_delay = delay; // Capture delay for next transition
+        @ (Y == 1.0) // Wait for output to change back to 1
+            time_delay = delay; // Capture delay for next transition
+        @(time_delay); // Wait for specified delay
     end
+
 endmodule
