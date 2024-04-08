@@ -35,7 +35,7 @@ module dac(out, clk, i1,i2,i3,i4,i5,i6,i7,i8);
                 6: input_voltage = V(i7);
                 7: input_voltage = V(i8);
             endcase
-            
+
             if (input_voltage > thresh) begin
                 aout = aout + fullscale/weight;
             end
