@@ -30,7 +30,7 @@ module dac(out, clk, i1,i2,i3,i4,i5,i6,i7,i8);
 	@(cross(V(clk) - thresh, dir) or initial_step) begin
 	    aout = 0;
 	    weight = 2;
-	    for (i = 7; i >= 0; i = i - 1) begin
+	    for (i = 7; i >= 0; i = i - 1) begin : input_voltage_block
             real input_voltage;
             case(i)
                 0: input_voltage = V(i1);
@@ -51,5 +51,4 @@ module dac(out, clk, i1,i2,i3,i4,i5,i6,i7,i8);
     end
     V(out) <+ transition(aout + vmin, td, tt);
 end
-
 endmodule
