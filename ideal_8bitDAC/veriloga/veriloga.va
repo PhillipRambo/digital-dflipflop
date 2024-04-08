@@ -2,12 +2,10 @@
 
 `include "constants.vams"
 `include "disciplines.vams"
-`define bits 8
 
 // N-bit Digital to Analog Converter
 
-module dac(out, in, clk);
-    // parameter integer bits = 8 from [1:24];	// resolution (bits)
+module dac(out, clk, i1,i2,i3,i4,i5,i6,i7,i8);
     parameter real vmin = 0.0;			// minimum input voltage (V)
     parameter real vmax = 1.2 from (vmin:inf);	// maximum input voltage (V)
     parameter real td = 0;			// delay from clock edge to output (s)
@@ -21,10 +19,9 @@ module dac(out, in, clk);
     localparam real fullscale = vmax - vmin;
 
     output out;
-    input [`bits-1:0] in;
+    input i1,i2,i3,i4,i5,i6,i7,i8;
     input clk;
-    voltage out, clk;
-    voltage [`bits-1:0] in;
+    voltage i1,i2,i3,i4,i5,i6,i7,i8, out, clk; // input and output signals
     real aout;
     integer weight;
     genvar i;
@@ -33,13 +30,26 @@ module dac(out, in, clk);
 	@(cross(V(clk) - thresh, dir) or initial_step) begin
 	    aout = 0;
 	    weight = 2;
-	    for (i = `bits - 1; i >= 0; i = i - 1) begin
-		if (V(in[i]) > thresh) begin
-		    aout = aout + fullscale/weight;
-		end
-		weight = weight*2;
-	    end
-	end
-	V(out) <+ transition(aout + vmin, td, tt);
+	    for (i = 7; i >= 0; i = i - 1) begin
+            real input_voltage;
+            case(i)
+                0: input_voltage = V(i1);
+                1: input_voltage = V(i2);
+                2: input_voltage = V(i3);
+                3: input_voltage = V(i4);
+                4: input_voltage = V(i5);
+                5: input_voltage = V(i6);
+                6: input_voltage = V(i7);
+                7: input_voltage = V(i8);
+            endcase
+            
+            if (input_voltage > thresh) begin
+                aout = aout + fullscale/weight;
+            end
+            weight = weight * 2;
+        end
     end
+    V(out) <+ transition(aout + vmin, td, tt);
+end
+
 endmodule
