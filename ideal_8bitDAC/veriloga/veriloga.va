@@ -1,42 +1,47 @@
-module dac(out, clk, i1,i2,i3,i4,i5,i6,i7,i8, vref);
-    parameter real vdd = 1.2; // voltage level of logic 1 (V)
-    parameter real vss = 0;   // voltage level of logic 0 (V)
-    parameter real thresh = (vdd + vss) / 2; // logic threshold level (V)
-    parameter integer dir = +1 from [-1:1] exclude 0; // 1 for trigger on rising edge, -1 for falling
-    localparam real fullscale = 2 * vref; // Full-scale voltage range
-    
+module dac(out, clk, i1,i2,i3,i4,i5,i6,i7,i8);
+    parameter real vmin = 0.0;			// minimum input voltage (V)
+    parameter real vmax = 1.2 from (vmin:inf);	// maximum input voltage (V)
+    parameter real td = 0;			// delay from clock edge to output (s)
+    parameter real tt = 0;			// transition time of output (s)
+    parameter real vdd = 1.2;			// voltage level of logic 1 (V)
+    parameter real vss = 0;			// voltage level of logic 0 (V)
+    parameter real thresh = (vdd+vss)/2;	// logic threshold level (V)
+    parameter integer dir = +1 from [-1:1] exclude 0;
+    						// 1 for trigger on rising edge
+						// -1 for falling
+    localparam real fullscale = vmax - vmin;
+
     output out;
     input i1,i2,i3,i4,i5,i6,i7,i8;
     input clk;
-    input voltage vref; // Reference voltage
     voltage i1,i2,i3,i4,i5,i6,i7,i8, out, clk; // input and output signals
     real aout;
     integer weight;
     genvar i;
 
     analog begin
-        @(cross(V(clk) - thresh, dir) or initial_step) begin
-            aout = 0;
-            weight = 2;
-            for (i = 7; i >= 0; i = i - 1) begin
-                real input_voltage;
-                case(i)
-                    0: input_voltage = V(i1);
-                    1: input_voltage = V(i2);
-                    2: input_voltage = V(i3);
-                    3: input_voltage = V(i4);
-                    4: input_voltage = V(i5);
-                    5: input_voltage = V(i6);
-                    6: input_voltage = V(i7);
-                    7: input_voltage = V(i8);
-                endcase
-                
-                if (input_voltage > thresh) begin
-                    aout = aout + fullscale / weight;
-                end
-                weight = weight * 2;
+	@(cross(V(clk) - thresh, dir) or initial_step) begin
+	    aout = 0;
+	    weight = 2;
+	    for (i = 7; i >= 0; i = i - 1) begin : input_voltage_block
+            real input_voltage;
+            case(i)
+                0: input_voltage = V(i1);
+                1: input_voltage = V(i2);
+                2: input_voltage = V(i3);
+                3: input_voltage = V(i4);
+                4: input_voltage = V(i5);
+                5: input_voltage = V(i6);
+                6: input_voltage = V(i7);
+                7: input_voltage = V(i8);
+            endcase
+            
+            if (input_voltage > thresh) begin
+                aout = aout + fullscale/weight;
             end
+            weight = weight * 2;
         end
-        V(out) <+ transition(aout - vref, 0, 0); // Output transition with respect to vref
     end
+    V(out) <+ transition(aout + vmin, td, tt);
+end
 endmodule
